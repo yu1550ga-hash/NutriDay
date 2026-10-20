@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#6657e8">
+<title>Дневник питания — мой баланс</title>
+<style>
+:root{
+  --bg:#f5f6fc;--card:#fff;--ink:#20233a;--muted:#8589a5;--line:#eceef7;
+  --purple:#6657e8;--purple2:#8878ff;--cyan:#45c8d8;--green:#20a779;
+  --shadow:0 12px 32px rgba(46,48,100,.08);--radius:22px
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding:0 0 92px}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.app{max-width:760px;margin:0 auto}
+.hero{padding:25px 20px 27px;color:#fff;background:radial-gradient(circle at 90% 5%,rgba(255,255,255,.28),transparent 27%),linear-gradient(135deg,#7669f4,#5e54dc 58%,#4d75db);border-radius:0 0 30px 30px;box-shadow:0 15px 35px rgba(99,87,232,.2)}
+.topline{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.brand{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:800;letter-spacing:.2px}
+.brand-icon{width:40px;height:40px;display:grid;place-items:center;border-radius:14px;background:rgba(255,255,255,.2);font-size:22px}
+.day-pill{font-size:11px;background:rgba(255,255,255,.17);border:1px solid rgba(255,255,255,.23);padding:8px 11px;border-radius:30px}
+.hello{font-size:13px;opacity:.82;margin-bottom:5px}
+.hero h1{font-size:27px;line-height:1.15;letter-spacing:-.7px;margin-bottom:8px}
+.hero-sub{font-size:12px;opacity:.82}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:22px}
+.stat{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.14);padding:12px 11px;border-radius:17px;backdrop-filter:blur(8px);min-width:0}
+.stat-label{font-size:10px;opacity:.8;margin-bottom:7px}
+.stat-number{font-size:21px;font-weight:800;white-space:nowrap}
+.stat-unit{font-size:10px;font-weight:500;opacity:.8;margin-left:3px}
+.stat-foot{font-size:10px;opacity:.75;margin-top:5px}
+main{padding:17px 14px 20px}
+.page{display:none;animation:rise .22s ease}
+.page.active{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.section-head{display:flex;justify-content:space-between;align-items:end;margin:7px 3px 13px}
+.section-head h2{font-size:19px;letter-spacing:-.4px}
+.section-head p{font-size:11px;color:var(--muted);margin-top:4px}
+.card{background:var(--card);border:1px solid rgba(229,231,245,.8);border-radius:var(--radius);padding:17px;margin-bottom:13px;box-shadow:var(--shadow)}
+.card-title{font-size:14px;font-weight:800;margin-bottom:13px;display:flex;align-items:center;gap:8px}
+.card-title .emoji{width:31px;height:31px;border-radius:11px;display:grid;place-items:center;background:#f0efff;font-size:16px}
+.kcal-panel{background:linear-gradient(135deg,#fff,#f7f6ff);border:1px solid #eeecff}
+.kcal-row{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.kcal-big{font-size:31px;font-weight:850;letter-spacing:-1px}
+.kcal-big small{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0}
+.kcal-caption{font-size:11px;color:var(--muted);margin-top:3px}
+.ring{width:84px;height:84px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--purple) var(--progress,0%),#e9e7ff 0);position:relative;flex-shrink:0}
+.ring:before{content:"";position:absolute;inset:7px;background:#fff;border-radius:50%}
+.ring-inner{position:relative;text-align:center;font-size:16px;font-weight:800}
+.ring-inner small{display:block;font-size:9px;color:var(--muted);font-weight:600}
+.progress{height:8px;background:#ecebfa;border-radius:20px;overflow:hidden;margin-top:16px}
+.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--purple),#9a8cff);border-radius:20px;transition:width .3s}
+.macro-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:15px}
+.macro{padding:11px 10px;border-radius:15px;background:#fafaff;border:1px solid #f0effa}
+.macro-top{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--purple)}
+.macro strong{display:block;font-size:17px;margin-top:7px}
+.macro small{font-size:10px;color:var(--muted);font-weight:500}
+.quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.quick{display:flex;align-items:center;gap:11px;text-align:left;padding:13px;border:1px solid var(--line);border-radius:17px;background:#fff;color:var(--ink)}
+.quick-icon{width:42px;height:42px;border-radius:14px;background:#f0efff;display:grid;place-items:center;font-size:21px;flex-shrink:0}
+.quick b{display:block;font-size:12px}
+.quick small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
+.btn{border:0;border-radius:13px;padding:12px 15px;font-weight:750;font-size:12px;transition:transform .15s,opacity .15s}
+.btn:active{transform:scale(.98)}
+.primary{background:linear-gradient(135deg,var(--purple),#7b6cf0);color:#fff;box-shadow:0 7px 16px rgba(102,87,232,.2)}
+.soft{background:#f0efff;color:var(--purple)}
+.ghost{background:#f4f5fa;color:#555a76}
+.danger{background:#fff0f0;color:#c94c5b}
+.full{width:100%}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:11px;font-weight:750;color:#60647e;margin-bottom:7px}
+.field input,.field textarea,.field select{width:100%;border:1px solid #e6e8f2;background:#fbfbfe;border-radius:13px;padding:12px;color:var(--ink);outline:none;font-size:13px}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:#9a90f4;box-shadow:0 0 0 3px #f0eeff}
+.field textarea{min-height:82px;resize:vertical}
+.hint{font-size:10px;line-height:1.5;color:var(--muted);margin-top:6px}
+.row{display:flex;gap:9px}
+.row>*{flex:1;min-width:0}
+.meal{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #f0f1f7}
+.meal:last-child{border-bottom:0;padding-bottom:0}
+.meal-icon{width:42px;height:42px;border-radius:14px;background:#f2f1ff;display:grid;place-items:center;font-size:20px;flex-shrink:0}
+.meal-info{flex:1;min-width:0}
+.meal-name{font-size:12px;font-weight:800;overflow-wrap:anywhere}
+.meal-detail{font-size:10px;color:var(--muted);margin-top:5px;line-height:1.4}
+.meal-cal{text-align:right;font-size:14px;font-weight:850;white-space:nowrap}
+.meal-cal small{display:block;font-size:9px;color:var(--muted);font-weight:600;margin-top:3px}
+.icon-btn{border:0;background:#f4f5fa;color:#8b8fa5;width:29px;height:29px;border-radius:9px;font-size:13px;margin-left:4px}
+.empty{text-align:center;padding:24px 10px;color:var(--muted);font-size:12px}
+.empty .big{font-size:28px;margin-bottom:8px}
+.advice{display:flex;gap:11px;align-items:flex-start;padding:12px;border-radius:15px;background:#f8f7ff;margin-bottom:8px}
+.advice:last-child{margin-bottom:0}
+.advice-icon{width:35px;height:35px;display:grid;place-items:center;background:#fff;border-radius:12px;font-size:18px;flex-shrink:0}
+.advice b{font-size:12px;display:block;margin:2px 0 4px}
+.advice p{font-size:11px;color:#777b96;line-height:1.45}
+.chatbox{height:300px;overflow:auto;background:#fafaff;border:1px solid #efeff8;border-radius:16px;padding:12px;margin-bottom:11px}
+.bubble{max-width:88%;padding:10px 12px;border-radius:15px;font-size:12px;line-height:1.5;margin-bottom:9px;overflow-wrap:anywhere;white-space:pre-wrap}
+.bubble.ai{background:#eeedff;border-bottom-left-radius:4px}
+.bubble.user{background:#6657e8;color:#fff;margin-left:auto;border-bottom-right-radius:4px}
+.chat-entry{display:flex;gap:7px}
+.chat-entry input{flex:1;min-width:0;border:1px solid #e5e7f2;border-radius:13px;padding:11px;font-size:12px;outline:none}
+.chat-entry button{padding:0 14px}
+.quote{background:linear-gradient(135deg,#6657e8,#8375f2);color:white;border-radius:18px;padding:19px;text-align:center;font-size:13px;font-weight:650;line-height:1.6}
+.quote small{display:block;font-size:10px;opacity:.75;margin-top:8px;font-weight:500}
+.chart-wrap{position:relative;width:100%;height:240px}
+canvas{width:100%;height:240px;display:block}
+.report-line{display:flex;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid #f0f1f7;font-size:12px}
+.report-line:last-child{border-bottom:0}
+.report-line span{color:var(--muted)}
+.report-line strong{text-align:right}
+.notice{padding:11px 13px;border-radius:13px;font-size:11px;line-height:1.5;margin-bottom:9px}
+.notice.info{background:#eef6ff;color:#315b91}
+.notice.warn{background:#fff6df;color:#94651a}
+.notice.good{background:#e8faf2;color:#177951}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:10;background:rgba(255,255,255,.94);backdrop-filter:blur(18px);border-top:1px solid #eceef7;padding:8px 7px calc(8px + env(safe-area-inset-bottom));display:flex;justify-content:center}
+.nav-inner{width:100%;max-width:650px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.nav-btn{border:0;background:transparent;color:#9296ad;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;border-radius:12px;font-size:9px;font-weight:750}
+.nav-btn .nav-icon{font-size:19px;line-height:1.1}
+.nav-btn.active{color:var(--purple);background:#f1efff}
+.toast{position:fixed;left:50%;bottom:88px;transform:translate(-50%,15px);opacity:0;pointer-events:none;background:#252744;color:#fff;border-radius:13px;padding:11px 16px;font-size:12px;box-shadow:var(--shadow);transition:.25s;z-index:30;max-width:90%;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.footer-note{font-size:10px;color:var(--muted);line-height:1.5;margin:12px 4px}
+@media(min-width:600px){.hero{border-radius:0 0 32px 32px;padding:28px 28px 30px}.hero h1{font-size:31px}main{padding:22px 22px}.stats{gap:13px}.stat{padding:14px}.card{padding:20px}}
+@media(max-width:360px){.stats{gap:6px}.stat{padding:10px 8px}.stat-number{font-size:18px}.hero h1{font-size:24px}.macro-grid{gap:5px}.macro{padding:9px 7px}.quick{padding:10px;gap:8px}}
+
+.food-search-panel{margin-top:12px;padding:13px;border:1px solid #e7e4ff;border-radius:15px;background:#faf9ff}
+.food-search-title{font-size:13px;font-weight:850;margin-bottom:7px}
+.food-search-note{font-size:11px;line-height:1.5;color:var(--muted);margin-bottom:10px}
+.food-result{padding:10px;background:#fff;border:1px solid var(--line);border-radius:12px;margin-top:8px}
+.food-result b{font-size:11px;display:block;line-height:1.4}
+.food-result small{display:block;color:var(--muted);font-size:10px;line-height:1.5;margin:4px 0 8px}
+.food-result .btn{margin:3px 3px 0 0;padding:9px 10px;font-size:10px}
+.food-search-link{color:var(--purple);font-size:11px;display:inline-block;margin-top:7px}
+.energy-card{overflow:hidden}
+.energy-intro{font-size:11px;line-height:1.5;color:var(--muted);margin:-4px 0 14px}
+.energy-grid{display:grid;grid-template-columns:1fr;gap:10px}
+.energy-item{border:1px solid var(--line);border-radius:16px;padding:13px;background:#fcfcff}
+.energy-item-head{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.energy-icon{width:37px;height:37px;display:grid;place-items:center;background:#f0efff;border-radius:12px;font-size:19px;flex-shrink:0}
+.energy-item-head b{font-size:12px;display:block}
+.energy-item-head small{font-size:10px;color:var(--muted);display:block;margin-top:3px}
+.energy-status{font-size:12px;font-weight:800;line-height:1.4;padding:9px 10px;border-radius:11px;background:#f0f2f8;color:#555a76}
+.energy-status.good{background:#e8faf2;color:#177951}
+.energy-status.warn{background:#fff6df;color:#94651a}
+.energy-status.bad{background:#fff0f0;color:#b83e4b}
+.energy-summary{margin-top:12px;padding:14px;border-radius:16px;background:linear-gradient(135deg,#f4f2ff,#f1f8ff)}
+.energy-summary-title{font-size:13px;font-weight:850;margin-bottom:10px}
+.energy-summary-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid rgba(120,120,170,.13);font-size:11px}
+.energy-summary-row:last-of-type{border-bottom:0}
+.energy-summary-row span{color:#717590}
+.energy-summary-row strong{text-align:right;font-size:11px}
+.energy-footnote{font-size:10px;line-height:1.5;color:var(--muted);margin-top:10px}
+@media(min-width:500px){.energy-grid{grid-template-columns:1fr 1fr}.energy-item:last-child{grid-column:1/-1}}
+
+</style>
+</head>
+<body>
+<div class="app">
+<header class="hero">
+  <div class="topline">
+    <div class="brand"><div class="brand-icon">🥑</div><span>МОЙ БАЛАНС</span></div>
+    <div class="day-pill" id="datePill">📅 Сегодня</div>
+  </div>
+  <div class="hello" id="hello">ТВОЙ ПУТЬ К ХОРОШЕМУ САМОЧУВСТВИЮ</div>
+  <h1 id="heroTitle">Маленькие шаги.<br>Большие перемены.</h1>
+  <div class="hero-sub">Твой дневник питания и привычек</div>
+  <div class="stats">
+    <div class="stat"><div class="stat-label">СЪЕДЕНО СЕГОДНЯ</div><div class="stat-number"><span id="todayCal">0</span><span class="stat-unit">ккал</span></div><div class="stat-foot">из <span id="statGoal">1400</span> ккал</div></div>
+    <div class="stat"><div class="stat-label">ОСТАЛОСЬ</div><div class="stat-number"><span id="remainCal">1400</span><span class="stat-unit">ккал</span></div><div class="stat-foot">до верхней цели</div></div>
+    <div class="stat"><div class="stat-label">ТЕКУЩИЙ ВЕС</div><div class="stat-number"><span id="curWeight">—</span><span class="stat-unit">кг</span></div><div class="stat-foot">каждый шаг важен</div></div>
+  </div>
+</header>
+
+<main>
+<section class="page active" id="home">
+  <div class="section-head"><div><h2>Твой день ✨</h2><p id="todayLabel">Спокойно двигайся к своей цели</p></div></div>
+  <div class="card kcal-panel">
+    <div class="kcal-row"><div><div class="kcal-caption">КАЛОРИИ ЗА ДЕНЬ</div><div class="kcal-big"><span id="homeCal">0</span> <small>ккал</small></div><div class="kcal-caption">Цель: <b id="homeGoal">1300–1400 ккал</b></div></div><div class="ring" id="ring"><div class="ring-inner"><span id="ringPct">0%</span><small>цели</small></div></div></div>
+    <div class="progress"><span id="calProgress"></span></div>
+    <div class="macro-grid">
+      <div class="macro"><div class="macro-top"><span class="dot"></span>Белки</div><strong id="homeP">0 г</strong><small>за сегодня</small></div>
+      <div class="macro"><div class="macro-top"><span class="dot" style="background:#f6a64a"></span>Жиры</div><strong id="homeF">0 г</strong><small>за сегодня</small></div>
+      <div class="macro"><div class="macro-top"><span class="dot" style="background:#37b8b0"></span>Углеводы</div><strong id="homeC">0 г</strong><small>за сегодня</small></div>
+    </div>
+  </div>
+  <div class="section-head"><div><h2>Энергетический баланс ⚡</h2><p>Три ориентира на сегодня</p></div></div>
+  <div class="card energy-card">
+    <div class="card-title"><span class="emoji">⚖️</span>Баланс калорий</div>
+    <p class="energy-intro">Расчёт обновляется автоматически по записям питания за сегодня.</p>
+    <div class="energy-grid">
+      <div class="energy-item">
+        <div class="energy-item-head"><span class="energy-icon">🎯</span><div><b>1. План питания</b><small id="energyPlanRange">1300–1400 ккал</small></div></div>
+        <div class="energy-status" id="energyPlanStatus">Добавь питание, чтобы увидеть статус</div>
+      </div>
+      <div class="energy-item">
+        <div class="energy-item-head"><span class="energy-icon">🔥</span><div><b>2. Обмен в покое (BMR)</b><small>1745 ккал</small></div></div>
+        <div class="energy-status" id="energyBmrStatus">Добавь питание, чтобы увидеть статус</div>
+      </div>
+      <div class="energy-item">
+        <div class="energy-item-head"><span class="energy-icon">⚖️</span><div><b>3. Поддержка веса (TDEE)</b><small>2100–2250 ккал</small></div></div>
+        <div class="energy-status" id="energyTdeeStatus">Добавь питание, чтобы увидеть статус</div>
+      </div>
+    </div>
+    <div class="energy-summary">
+      <div class="energy-summary-title">📊 Итог дня</div>
+      <div class="energy-summary-row"><span>Похудение</span><strong id="energyWeightLoss">—</strong></div>
+      <div class="energy-summary-row"><span>Безопасность</span><strong id="energySafety">—</strong></div>
+    </div>
+    <p class="energy-footnote">Оценка ориентировочная: BMR — расход в покое, а не обязательный минимум питания. Статус безопасности по калориям не заменяет индивидуальную оценку специалиста.</p>
+  </div>
+  <div class="section-head"><div><h2>Быстрые действия</h2><p>Всё нужное — под рукой</p></div></div>
+  <div class="quick-grid">
+    <button class="quick" data-go="diary"><span class="quick-icon">🍽️</span><span><b>Добавить еду</b><small>Записать приём пищи</small></span></button>
+    <button class="quick" data-go="weight"><span class="quick-icon" style="background:#e8faf3">⚖️</span><span><b>Записать вес</b><small>Следить за динамикой</small></span></button>
+    <button class="quick" data-go="coach"><span class="quick-icon" style="background:#fff3e7">🧠</span><span><b>Спросить тренера</b><small>Совет по привычкам</small></span></button>
+    <button class="quick" data-go="reports"><span class="quick-icon" style="background:#eaf7ff">📈</span><span><b>Мой прогресс</b><small>Посмотреть отчёты</small></span></button>
+  </div>
+  <div class="section-head"><div><h2>Поддержка на сегодня</h2><p>Небольшое напоминание</p></div></div>
+  <div class="quote" id="quote">«Не идеальность, а последовательность — ключ к результату.»<small>Твой баланс начинается сегодня</small></div>
+</section>
+
+<section class="page" id="diary">
+  <div class="section-head"><div><h2>Дневник питания 🍓</h2><p>Записывай, что ел или пила в течение дня</p></div></div>
+  <div class="card">
+    <div class="card-title"><span class="emoji">✍️</span>Добавить приём пищи</div>
+    <div class="field"><label for="mealIn">Продукты и количество</label><textarea id="mealIn" placeholder="Например: творог 4% 200г, овсянка 45г, кофе"></textarea><div class="hint">Несколько продуктов можно разделить запятыми. Количество указывай в граммах: «курица 150г».</div></div>
+    <button class="btn primary full" id="addMealBtn">＋ Добавить в дневник</button>
+    <div id="foodSearchPanel" class="food-search-panel" hidden></div>
+    <div class="hint" style="margin-top:10px">Если продукта нет во встроенной базе, дневник попробует найти его в интернет-базе Open Food Facts. Проверь совпадение и пищевую ценность перед добавлением. Для точности приоритет у этикетки производителя.</div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="emoji">📋</span>Сегодняшние записи <span id="mealCount" style="margin-left:auto;color:var(--muted);font-size:11px">0 записей</span></div>
+    <div id="mealList"><div class="empty"><div class="big">🥣</div>Пока записей нет. Добавь первый приём пищи.</div></div>
+  </div>
+</section>
+
+<section class="page" id="weight">
+  <div class="section-head"><div><h2>Мой вес ⚖️</h2><p>Смотри на тенденцию, а не на одно измерение</p></div></div>
+  <div class="card">
+    <div class="card-title"><span class="emoji">📍</span>Новое измерение</div>
+    <div class="field"><label for="weightIn">Вес, кг</label><input id="weightIn" type="number" min="30" max="300" step="0.1" placeholder="Например, 82.4"></div>
+    <button class="btn primary full" id="addWeightBtn">Сохранить вес</button>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="emoji">📈</span>Динамика веса</div>
+    <div class="chart-wrap"><canvas id="wChart"></canvas></div>
+    <div id="wStats"></div>
+  </div>
+</section>
+
+<section class="page" id="coach">
+  <div class="section-head"><div><h2>Твой тренер 🧭</h2><p>Поддержка и идеи для здоровых привычек</p></div></div>
+  <div class="card">
+    <div class="card-title"><span class="emoji">🌱</span>Рекомендации</div>
+    <div id="recList"></div>
+    <button class="btn soft full" id="refreshTips" style="margin-top:12px">↻ Другие рекомендации</button>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="emoji">💬</span>Задать вопрос</div>
+    <div class="chatbox" id="chatMsgs"><div class="bubble ai">Привет! Я локальный помощник дневника. Могу подсказать идеи про продукты, воду, сон, активность и твои записи. Я не являюсь врачом, а ответы не заменяют медицинскую консультацию.</div></div>
+    <div class="chat-entry"><input id="chatIn" type="text" placeholder="Например: как есть больше белка?"><button class="btn primary" id="sendChatBtn">Отправить</button></div>
+    <p class="hint">Чат работает без подключения к интернету и использует заранее подготовленные ответы — это не облачная ИИ-модель.</p>
+  </div>
+</section>
+
+<section class="page" id="reports">
+  <div class="section-head"><div><h2>Мой прогресс 📊</h2><p>Сводка питания и изменений</p></div></div>
+  <div class="card">
+    <div class="card-title"><span class="emoji">🗓️</span>Период отчёта</div>
+    <div class="row"><button class="btn primary" id="weekBtn">Последние 7 дней</button><button class="btn soft" id="monthBtn">Последние 30 дней</button></div>
+    <div id="repBox" style="margin-top:14px"></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="emoji">💾</span>Твои данные</div>
+    <p class="hint" style="margin:0 0 12px">Записи сохраняются в хранилище этого браузера на устройстве. Очистка данных браузера может удалить дневник.</p>
+    <div class="row"><button class="btn soft" id="exportBtn">Экспорт JSON</button><button class="btn soft" id="csvBtn">Экспорт еды CSV</button></div>
+    <input type="file" id="importFile" accept=".json,application/json" hidden>
+    <button class="btn ghost full" id="importBtn" style="margin-top:8px">Импорт резервной копии</button>
+  </div>
+</section>
+
+<section class="page" id="settings">
+  <div class="section-head"><div><h2>Настройки ⚙️</h2><p>Настрой дневник под себя</p></div></div>
+  <div class="card">
+    <div class="card-title"><span class="emoji">🎯</span>Твои цели</div>
+    <div class="field"><label for="setName">Как к тебе обращаться</label><input id="setName" placeholder="Твоё имя"></div>
+    <div class="row"><div class="field"><label for="setTarget">Целевой вес, кг</label><input id="setTarget" type="number" min="30" max="300" step="0.1" value="85"></div><div class="field"><label for="setStart">Дата начала</label><input id="setStart" type="date"></div></div>
+    <div class="row"><div class="field"><label for="setMin">Калории от</label><input id="setMin" type="number" min="0" max="10000" value="1300"></div><div class="field"><label for="setMax">Калории до</label><input id="setMax" type="number" min="1" max="10000" value="1400"></div></div>
+    <button class="btn primary full" id="saveSettingsBtn">Сохранить настройки</button>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="emoji">🧹</span>Управление данными</div>
+    <p class="hint" style="margin:0 0 12px">Перед сбросом рекомендуется экспортировать резервную копию в разделе «Прогресс».</p>
+    <button class="btn danger full" id="clearBtn">Удалить все данные</button>
+  </div>
+  <p class="footer-note">Дневник предназначен для личного учёта и не заменяет диагностику или рекомендации медицинского специалиста. Целевой калораж индивидуален; не используй слишком низкую цель без консультации специалиста.</p>
+</section>
+</main>
+</div>
+
+<nav class="bottom-nav"><div class="nav-inner">
+  <button class="nav-btn active" data-page="home"><span class="nav-icon">⌂</span>Главная</button>
+  <button class="nav-btn" data-page="diary"><span class="nav-icon">🍽</span>Дневник</button>
+  <button class="nav-btn" data-page="weight"><span class="nav-icon">⚖</span>Вес</button>
+  <button class="nav-btn" data-page="coach"><span class="nav-icon">✦</span>Тренер</button>
+  <button class="nav-btn" data-page="reports"><span class="nav-icon">▥</span>Прогресс</button>
+</div></nav>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+const DB={
+ 'кофе':{c:2,p:.1,f:0,car:0,d:200},'хлеб сельский':{c:250,p:8,f:3,car:48,d:30},
+ 'хлебцы':{c:324,p:10,f:3,car:65,d:4.4},'лапша быстрого приготовления':{c:467,p:10,f:20,car:60,d:100},
+ 'сок томатный':{c:26,p:1,f:0,car:5,d:200},'пиво безалкогольное':{c:22,p:0,f:0,car:4,d:330},
+ 'творог 4%':{c:100,p:17,f:4,car:2,d:100},'овсянка':{c:366,p:12,f:6,car:66,d:45},
+ 'яичница':{c:230,p:14,f:18,car:1,d:150},'кефир':{c:50,p:3,f:2.5,car:4,d:250},
+ 'капуста квашеная':{c:19,p:1,f:0,car:4,d:150},'кимчи':{c:20,p:1,f:0,car:4,d:150},
+ 'суп куриный':{c:44,p:4,f:2,car:2,d:250},'сухарики':{c:330,p:10,f:6,car:60,d:10},
+ 'мясо':{c:250,p:25,f:15,car:0,d:100},'курица':{c:165,p:31,f:3.6,car:0,d:100},
+ 'рыба':{c:150,p:20,f:8,car:0,d:100},'минтай':{c:70,p:16,f:1,car:0,d:100},
+ 'масло растительное':{c:900,p:0,f:100,car:0,d:5},'салат овощной':{c:50,p:1,f:2,car:10,d:200},
+ 'яблоко':{c:52,p:.3,f:.2,car:14,d:150},'банан':{c:89,p:1.1,f:.3,car:23,d:120},
+ 'рис варёный':{c:130,p:2.7,f:.3,car:28,d:150},'гречка варёная':{c:110,p:3.6,f:1.1,car:20,d:150},
+ 'картофель':{c:77,p:2,f:.1,car:17,d:150},'огурец':{c:15,p:.7,f:.1,car:3.6,d:100},
+ 'помидор':{c:18,p:.9,f:.2,car:3.9,d:100},'сыр':{c:350,p:25,f:27,car:2,d:30},
+ 'молоко':{c:52,p:3.2,f:2.5,car:4.8,d:200},'йогурт':{c:75,p:4,f:3,car:7,d:150},
+ 'яйцо':{c:143,p:13,f:10,car:1.1,d:60},'лосось':{c:208,p:20,f:13,car:0,d:100},
+ 'индейка':{c:135,p:29,f:1.6,car:0,d:100},'апельсин':{c:47,p:.9,f:.1,car:12,d:150},
+ 'груша':{c:57,p:.4,f:.1,car:15,d:160},'шоколад':{c:540,p:5,f:30,car:60,d:20}
+};
+const ADV=[
+ {i:'🥦',t:'Добавляй овощи',d:'Овощи и фрукты разных цветов помогают разнообразить рацион.'},
+ {i:'💧',t:'Не забывай о воде',d:'Держи воду под рукой и ориентируйся на жажду и рекомендации врача.'},
+ {i:'🥚',t:'Белок в течение дня',d:'Яйца, рыба, бобовые, творог и йогурт — варианты белковых продуктов.'},
+ {i:'🌾',t:'Выбирай клетчатку',d:'Овсянка, цельнозерновые продукты, овощи и фрукты помогают разнообразить питание.'},
+ {i:'🚶',t:'Немного движения',d:'Даже короткая прогулка может стать хорошим началом. Учитывай свои возможности.'},
+ {i:'😴',t:'Сон тоже важен',d:'Старайся придерживаться регулярного времени сна и спокойного вечернего ритуала.'},
+ {i:'🫒',t:'Обращай внимание на жиры',d:'Чаще выбирай ненасыщенные жиры, например из рыбы, орехов и растительных масел.'},
+ {i:'🧂',t:'Следи за солью',d:'Сравнивай этикетки и чаще выбирай менее солёные продукты, если это подходит твоим рекомендациям.'}
+];
+const QUOTES=['Не идеальность, а последовательность — ключ к результату.','Маленькие шаги каждый день приводят к большим переменам.','Забота о себе — это привычка, которую можно развивать.','Прогресс — это не совершенство, а движение вперёд.','Каждый день — новый шанс поддержать себя.'];
+const DEFAULT={settings:{targetWeight:85,startDate:localDate(),minCalories:1300,maxCalories:1400,userName:''},meals:[],weights:[],chatHistory:[]};
+let S=loadState();
+function localDate(d=new Date()){const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);return x.toISOString().slice(0,10)}
+function loadState(){try{const x=JSON.parse(localStorage.getItem('dnevnik_balance_v1')||'null');if(x&&typeof x==='object')return {...DEFAULT,...x,settings:{...DEFAULT.settings,...(x.settings||{})},meals:Array.isArray(x.meals)?x.meals:[],weights:Array.isArray(x.weights)?x.weights:[],chatHistory:Array.isArray(x.chatHistory)?x.chatHistory:[]}}catch(e){}return JSON.parse(JSON.stringify(DEFAULT))}
+function save(){try{localStorage.setItem('dnevnik_balance_v1',JSON.stringify(S))}catch(e){toast('Не удалось сохранить данные браузера. Экспортируй резервную копию.')}}
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),2600)}
+function todayMeals(){return S.meals.filter(m=>m.date===localDate())}
+function sumMeals(list){return list.reduce((a,m)=>({cal:a.cal+(+m.tc||0),p:a.p+(+m.tp||0),f:a.f+(+m.tf||0),c:a.c+(+m.tc2||0)}),{cal:0,p:0,f:0,c:0})}
+function todaySummary(){return sumMeals(todayMeals())}
+function latestWeight(){return S.weights.slice().sort((a,b)=>a.date.localeCompare(b.date)).slice(-1)[0]}
+function go(page){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===page));document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===page));if(page==='weight'){drawChart();weightStats()}if(page==='reports')weekReport();window.scrollTo({top:0,behavior:'smooth'})}
+document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
+document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)));
+function parseMeal(input){
+ const chunks=input.split(/[,;\n]+/).map(x=>x.trim()).filter(Boolean),items=[],unknown=[];
+ let tc=0,tp=0,tf=0,tc2=0;
+ for(const chunk of chunks){
+  const lower=chunk.toLowerCase().replace(/ё/g,'е');
+  const weightMatch=lower.match(/(\d+(?:[.,]\d+)?)\s*(?:грамм(?:а|ов)?|гр\.?|г\b|мл\b)/i);
+  const weight=weightMatch?parseFloat(weightMatch[1].replace(',','.')):null;
+  let name=lower.replace(/(\d+(?:[.,]\d+)?)\s*(?:грамм(?:а|ов)?|гр\.?|г\b|мл\b)/ig,' ').replace(/\s+/g,' ').trim();
+  let key=Object.keys(DB).sort((a,b)=>b.length-a.length).find(k=>name.includes(k));
+  if(!key){unknown.push(chunk);continue}
+  const prod=DB[key],w=weight||prod.d,m=w/100;
+  const cal=Math.round(prod.c*m),p=prod.p*m,f=prod.f*m,car=prod.car*m;
+  tc+=cal;tp+=p;tf+=f;tc2+=car;
+  items.push({name:chunk,w,cal,p:+p.toFixed(1),f:+f.toFixed(1),car:+car.toFixed(1)});
+ }
+ return {items,unknown,tc, tp:+tp.toFixed(1),tf:+tf.toFixed(1),tc2:+tc2.toFixed(1)};
+}
+let pendingFoodMeal=null;
+function parseFoodWeight(chunk){
+ const m=chunk.toLowerCase().match(/(\d+(?:[.,]\d+)?)\s*(?:грамм(?:а|ов)?|гр\.?|г\b|мл\b)/i);
+ return m?parseFloat(m[1].replace(',','.')):100;
+}
+function foodSearchName(chunk){return chunk.toLowerCase().replace(/\d+(?:[.,]\d+)?\s*(?:грамм(?:а|ов)?|гр\.?|г\b|мл\b)/ig,' ').replace(/\s+/g,' ').trim()}
+async function searchOpenFoodFacts(query){
+ const url='https://world.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(query)+'&search_simple=1&action=process&json=1&page_size=6&fields=product_name,product_name_ru,brands,nutriments,code';
+ const res=await fetch(url,{headers:{'Accept':'application/json'}});
+ if(!res.ok)throw new Error('HTTP '+res.status);
+ const data=await res.json();
+ return (data.products||[]).map(x=>{
+  const n=x.nutriments||{};
+  let kcal=Number(n['energy-kcal_100g']??n['energy-kcal_value']);
+  if(!Number.isFinite(kcal)||kcal<0){const kj=Number(n['energy_100g']);kcal=Number.isFinite(kj)?kj/4.184:NaN}
+  const p=Number(n.proteins_100g),f=Number(n.fat_100g),c=Number(n.carbohydrates_100g);
+  if(!Number.isFinite(kcal)||!Number.isFinite(p)||!Number.isFinite(f)||!Number.isFinite(c))return null;
+  return {name:x.product_name_ru||x.product_name||query,brand:x.brands||'',kcal:Math.round(kcal),p:+p.toFixed(1),f:+f.toFixed(1),car:+c.toFixed(1),code:x.code||''};
+ }).filter(Boolean);
+}
+function startFoodSearch(result){
+ pendingFoodMeal={result,unknown:result.unknown.slice(),options:[],selected:{}};
+ const panel=$('foodSearchPanel');panel.hidden=false;
+ panel.innerHTML='<div class="food-search-title">🔎 Ищу продукты в интернете…</div><div class="food-search-note">Используется открытая база Open Food Facts. Сверяй найденные данные с упаковкой: результаты могут относиться к другому бренду или рецепту.</div>';
+ Promise.all(pendingFoodMeal.unknown.map(async (chunk)=>{
+  try{return await searchOpenFoodFacts(foodSearchName(chunk))}catch(e){return []}
+ })).then(results=>{
+  if(!pendingFoodMeal)return;
+  pendingFoodMeal.options=results;
+  renderFoodSearchResults();
+ });
+}
+function renderFoodSearchResults(){
+ const panel=$('foodSearchPanel');if(!pendingFoodMeal){panel.hidden=true;panel.innerHTML='';return}
+ panel.hidden=false;
+ let html='<div class="food-search-title">🔎 Проверь найденные продукты</div><div class="food-search-note">Выбери подходящий вариант для каждого неизвестного продукта. Если совпадения нет, можно открыть поиск в интернете или пропустить продукт.</div>';
+ pendingFoodMeal.unknown.forEach((chunk,i)=>{
+  if(Object.prototype.hasOwnProperty.call(pendingFoodMeal.selected,i)){
+   const v=pendingFoodMeal.selected[i];html+=`<div class="food-result"><b>${esc(chunk)}</b><small>${v===null?'Пропущено':`Выбрано: ${esc(v.name)} — ${v.kcal} ккал на 100 г`}</small><button class="btn soft" data-revise-food="${i}">Изменить выбор</button></div>`;return;
+  }
+  html+=`<div class="food-result"><b>Не найдено во встроенной базе: ${esc(chunk)}</b>`;
+  const options=pendingFoodMeal.options[i]||[];
+  if(options.length){options.forEach((o,j)=>{html+=`<div class="food-result"><b>${esc(o.name)}${o.brand?' · '+esc(o.brand):''}</b><small>На 100 г: ${o.kcal} ккал · Б ${o.p} г · Ж ${o.f} г · У ${o.car} г</small><button class="btn primary" data-pick-food="${i}" data-option="${j}">Выбрать</button></div>`})}
+  else html+='<div class="food-search-note">Автоматический поиск не вернул подходящих данных. Это может быть ограничение сети или отсутствие продукта в базе.</div>';
+  html+=`<a class="food-search-link" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(foodSearchName(chunk)+' калорийность белки жиры углеводы на 100 г')}">Искать в Google ↗</a><br><button class="btn ghost" data-skip-food="${i}">Не добавлять этот продукт</button></div>`;
+ });
+ const done=Object.keys(pendingFoodMeal.selected).length===pendingFoodMeal.unknown.length;
+ if(done)html+='<button class="btn primary full" id="confirmFoodMeal" style="margin-top:10px">Добавить выбранные продукты в дневник</button>';
+ html+='<button class="btn ghost full" id="cancelFoodSearch" style="margin-top:8px">Отмена</button>';
+ panel.innerHTML=html;
+ panel.querySelectorAll('[data-pick-food]').forEach(b=>b.addEventListener('click',()=>{const i=+b.dataset.pickFood,j=+b.dataset.option;const o=pendingFoodMeal.options[i][j];pendingFoodMeal.selected[i]=o;renderFoodSearchResults()}));
+ panel.querySelectorAll('[data-skip-food]').forEach(b=>b.addEventListener('click',()=>{pendingFoodMeal.selected[+b.dataset.skipFood]=null;renderFoodSearchResults()}));
+ panel.querySelectorAll('[data-revise-food]').forEach(b=>b.addEventListener('click',()=>{delete pendingFoodMeal.selected[+b.dataset.reviseFood];renderFoodSearchResults()}));
+ const confirm=$('confirmFoodMeal');if(confirm)confirm.addEventListener('click',finishFoodMeal);
+ const cancel=$('cancelFoodSearch');if(cancel)cancel.addEventListener('click',()=>{pendingFoodMeal=null;panel.hidden=true;panel.innerHTML=''});
+}
+function finishFoodMeal(){
+ if(!pendingFoodMeal)return;
+ const {result,unknown,selected}=pendingFoodMeal;
+ const items=result.items.slice();let tc=result.tc,tp=result.tp,tf=result.tf,tc2=result.tc2;const skipped=[];
+ unknown.forEach((chunk,i)=>{
+  const product=selected[i];if(!product){skipped.push(chunk);return}
+  const w=parseFoodWeight(chunk),factor=w/100;
+  const cal=Math.round(product.kcal*factor),p=+(product.p*factor).toFixed(1),f=+(product.f*factor).toFixed(1),car=+(product.car*factor).toFixed(1);
+  items.push({name:chunk+' ['+product.name+']',w,cal,p,f,car,source:'Open Food Facts'});tc+=cal;tp+=p;tf+=f;tc2+=car;
+  const key=foodSearchName(chunk);if(key&&!DB[key])DB[key]={c:product.kcal,p:product.p,f:product.f,car:product.car,d:w};
+ });
+ if(!items.length){toast('Нечего добавлять: продукты не выбраны');return}
+ const meal={items,unknown:skipped,tc:Math.round(tc),tp:+tp.toFixed(1),tf:+tf.toFixed(1),tc2:+tc2.toFixed(1),date:localDate(),id:Date.now()};
+ S.meals.push(meal);save();$('mealIn').value='';pendingFoodMeal=null;$('foodSearchPanel').hidden=true;$('foodSearchPanel').innerHTML='';renderAll();
+ toast('Добавлено: '+meal.tc+' ккал'+(skipped.length?'. Пропущено: '+skipped.join(', '):''));
+}
+function addMeal(){
+ const input=$('mealIn').value.trim();if(!input){toast('Напиши, что ты ел или пила');return}
+ const result=parseMeal(input);
+ if(result.unknown.length){startFoodSearch(result);return}
+ if(!result.items.length){toast('Не нашёл продукты. Попробуй уточнить название и количество.');return}
+ pendingFoodMeal={result,unknown:[],selected:{}};finishFoodMeal();
+}
+function renderMeals(){
+ const list=todayMeals();$('mealCount').textContent=list.length+' '+plural(list.length,['запись','записи','записей']);
+ if(!list.length){$('mealList').innerHTML='<div class="empty"><div class="big">🥣</div>Пока записей нет. Добавь первый приём пищи.</div>';return}
+ $('mealList').innerHTML=list.slice().reverse().map(m=>`<div class="meal"><div class="meal-icon">🍽️</div><div class="meal-info"><div class="meal-name">${esc(m.items.map(i=>i.name).join(', '))}</div><div class="meal-detail">Б ${m.tp} г · Ж ${m.tf} г · У ${m.tc2} г</div></div><div class="meal-cal">${m.tc}<small>ккал</small></div><button class="icon-btn" data-del-meal="${m.id}" aria-label="Удалить">✕</button></div>`).join('');
+ document.querySelectorAll('[data-del-meal]').forEach(b=>b.addEventListener('click',()=>{if(confirm('Удалить эту запись?')){S.meals=S.meals.filter(m=>String(m.id)!==b.dataset.delMeal);save();renderAll();toast('Запись удалена')}}));
+}
+function plural(n,forms){const n10=n%10,n100=n%100;return n10===1&&n100!==11?forms[0]:n10>=2&&n10<=4&&(n100<12||n100>14)?forms[1]:forms[2]}
+function setEnergyStatus(id,text,tone){const el=$(id);el.textContent=text;el.className='energy-status'+(tone?' '+tone:'')}
+function renderEnergyBalance(cal){
+ const min=Number(S.settings.minCalories)||1300,max=Number(S.settings.maxCalories)||1400,bmr=1745,tdeeMin=2100,tdeeMax=2250;
+ $('energyPlanRange').textContent=`${min}–${max} ккал`;
+ if(cal<=0){
+  setEnergyStatus('energyPlanStatus','Пока нет записей о питании','');
+  setEnergyStatus('energyBmrStatus','Пока нет записей о питании','');
+  setEnergyStatus('energyTdeeStatus','Пока нет записей о питании','');
+  $('energyWeightLoss').textContent='Добавь питание для оценки';
+  $('energySafety').textContent='Недостаточно данных';$('energySafety').style.color='#717590';
+  return;
+ }
+ if(cal<min)setEnergyStatus('energyPlanStatus',`Ниже плана на ${Math.round(min-cal)} ккал`,'warn');
+ else if(cal>max)setEnergyStatus('energyPlanStatus',`Выше плана на ${Math.round(cal-max)} ккал`,'bad');
+ else setEnergyStatus('energyPlanStatus','В плане','good');
+ if(cal<bmr)setEnergyStatus('energyBmrStatus',`Ниже BMR на ${Math.round(bmr-cal)} ккал`,'warn');
+ else if(cal>bmr)setEnergyStatus('energyBmrStatus',`Выше BMR на ${Math.round(cal-bmr)} ккал`,'good');
+ else setEnergyStatus('energyBmrStatus','На уровне BMR','good');
+ if(cal<tdeeMin)setEnergyStatus('energyTdeeStatus',`Дефицит ${Math.round(tdeeMin-cal)}–${Math.round(tdeeMax-cal)} ккал`,'good');
+ else if(cal>tdeeMax)setEnergyStatus('energyTdeeStatus',`Профицит ${Math.round(cal-tdeeMax)}–${Math.round(cal-tdeeMin)} ккал`,'warn');
+ else setEnergyStatus('energyTdeeStatus','Поддержка (ориентировочно)','good');
+ $('energyWeightLoss').textContent=cal<tdeeMin?'Да — вероятен дефицит':cal>tdeeMax?'Нет — вероятен профицит':'Неопределённо — зона поддержки';
+ if(cal<1000){$('energySafety').textContent='Опасно низкий уровень — нужна консультация';$('energySafety').style.color='#b83e4b'}
+ else if(cal<min){$('energySafety').textContent='Жёстко: ниже заданного плана';$('energySafety').style.color='#94651a'}
+ else {$('energySafety').textContent='ОК по заданному диапазону*';$('energySafety').style.color='#177951'}
+}
+function renderHeader(){
+ const s=todaySummary(),goal=+S.settings.maxCalories||1400,remain=Math.max(0,goal-s.cal),w=latestWeight();
+ $('todayCal').textContent=Math.round(s.cal);$('homeCal').textContent=Math.round(s.cal);$('remainCal').textContent=Math.round(remain);$('curWeight').textContent=w?Number(w.w).toFixed(1).replace(/\.0$/,''):'—';$('statGoal').textContent=goal;
+ $('homeP').textContent=s.p.toFixed(1)+' г';$('homeF').textContent=s.f.toFixed(1)+' г';$('homeC').textContent=s.c.toFixed(1)+' г';
+ $('homeGoal').textContent=`${S.settings.minCalories}–${S.settings.maxCalories} ккал`;
+ renderEnergyBalance(s.cal);
+ const pct=Math.min(100,Math.round(s.cal/Math.max(1,goal)*100));$('ring').style.setProperty('--progress',(pct*3.6)+'deg');$('ringPct').textContent=pct+'%';$('calProgress').style.width=pct+'%';
+ const now=new Date();$('datePill').textContent='📅 '+now.toLocaleDateString('ru-RU',{day:'numeric',month:'short'});$('todayLabel').textContent=now.toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'});
+ const name=S.settings.userName.trim();$('hello').textContent=name?`РАДА ВИДЕТЬ ТЕБЯ, ${name.toLocaleUpperCase('ru-RU')}`:'ТВОЙ ПУТЬ К ХОРОШЕМУ САМОЧУВСТВИЮ';
+}
+function renderAll(){renderHeader();renderMeals();renderTips();weightStats();if($('reports').classList.contains('active'))weekReport()}
+function renderTips(){
+ const picked=ADV.slice().sort(()=>Math.random()-.5).slice(0,3);
+ $('recList').innerHTML=picked.map(a=>`<div class="advice"><div class="advice-icon">${a.i}</div><div><b>${a.t}</b><p>${a.d}</p></div></div>`).join('');
+ $('quote').innerHTML='«'+QUOTES[Math.floor(Math.random()*QUOTES.length)]+'»<small>Твой баланс начинается сегодня</small>';
+}
+function response(q){
+ const l=q.toLowerCase(),s=todaySummary(),w=latestWeight(),name=S.settings.userName||'друг';
+ if(/калори|сегодня|съел|съела|питани/.test(l))return `Сегодня в дневнике: ${Math.round(s.cal)} ккал. Остаток до верхней цели — ${Math.max(0,S.settings.maxCalories-s.cal)} ккал. Записи приблизительные, а подходящая цель зависит от индивидуальных потребностей.`;
+ if(/белок|протеин/.test(l))return 'Идеи источников белка: яйца, рыба, курица, индейка, творог, йогурт и бобовые. Старайся подбирать рацион с учётом своих предпочтений и рекомендаций специалиста.';
+ if(/овощ|клетчат|фрукт/.test(l))return 'Попробуй добавить к одному из приёмов пищи овощи или фрукт, а также постепенно выбирать цельнозерновые продукты. Увеличивай клетчатку постепенно и учитывай переносимость.';
+ if(/вода|пить/.test(l))return 'Держи воду рядом и пей регулярно, ориентируясь на жажду. При некоторых заболеваниях врач может рекомендовать ограничение жидкости — следуй его советам.';
+ if(/соль|натри/.test(l))return 'Чтобы сократить соль, сравнивай этикетки, пробуй травы и специи и чаще готовь из простых продуктов. При медицинских ограничениях следуй рекомендациям своего врача.';
+ if(/жир|холестерин/.test(l))return 'Для разнообразия рациона чаще выбирай источники ненасыщенных жиров — например рыбу, орехи и растительные масла — и ориентируйся на персональные рекомендации специалиста.';
+ if(/сон|спать|устал/.test(l))return 'Попробуй придерживаться похожего времени отхода ко сну, приглушать свет вечером и выделять время на спокойный ритуал перед сном.';
+ if(/ходьб|шаг|спорт|актив/.test(l))return 'Начни с комфортного уровня активности и увеличивай нагрузку постепенно. Если у тебя есть ограничения по здоровью, заранее согласуй безопасный уровень нагрузки с врачом.';
+ if(/вес|кг/.test(l))return w?`Последняя запись веса: ${w.w} кг (${w.date}). Сравнивай измерения в похожих условиях и смотри на тенденцию за недели, а не на ежедневные колебания.`:'Пока нет записей веса. Открой вкладку «Вес», введи измерение и нажми «Сохранить вес».';
+ if(/привет|здравств/.test(l))return `Привет, ${name}! Могу подсказать идеи по питанию, сну, воде, активности или помочь посмотреть твои записи.`;
+ if(/спасибо/.test(l))return 'Всегда пожалуйста! Отмечай небольшие успехи и выбирай привычки, которые комфортно поддерживать.';
+ if(/врач|лекарств|диагноз|боль|симптом/.test(l))return 'Я не медицинский специалист и не могу оценить симптомы или назначать лечение. По вопросам здоровья, лекарств и индивидуальной диеты обратись к квалифицированному врачу.';
+ return 'Могу помочь с общими идеями про белок, овощи, клетчатку, воду, соль, сон, активность, вес и калории. Я работаю офлайн по набору подготовленных ответов.';
+}
+function addBubble(text,type){const b=document.createElement('div');b.className='bubble '+type;b.textContent=text;$('chatMsgs').appendChild(b);$('chatMsgs').scrollTop=$('chatMsgs').scrollHeight}
+function sendChat(){
+ const input=$('chatIn'),q=input.value.trim();if(!q)return;
+ addBubble(q,'user');const a=response(q);addBubble(a,'ai');S.chatHistory.push({u:q,a,date:localDate()});S.chatHistory=S.chatHistory.slice(-40);save();input.value='';
+}
+function addWeight(){
+ const value=Number($('weightIn').value);if(!Number.isFinite(value)||value<30||value>300){toast('Введи вес от 30 до 300 кг');return}
+ const date=localDate(),existing=S.weights.findIndex(x=>x.date===date);
+ if(existing>=0)S.weights[existing].w=+value.toFixed(1);else S.weights.push({date,w:+value.toFixed(1)});
+ S.weights.sort((a,b)=>a.date.localeCompare(b.date));save();$('weightIn').value='';renderAll();drawChart();toast('Вес сохранён: '+value.toFixed(1)+' кг');
+}
+function drawChart(){
+ const canvas=$('wChart'),rect=canvas.getBoundingClientRect(),dpr=window.devicePixelRatio||1,w=Math.max(260,rect.width),h=240;
+ canvas.width=w*dpr;canvas.height=h*dpr;const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,w,h);
+ const data=S.weights.slice().sort((a,b)=>a.date.localeCompare(b.date));
+ if(!data.length){ctx.fillStyle='#8589a5';ctx.font='13px sans-serif';ctx.textAlign='center';ctx.fillText('Добавь первое измерение веса',w/2,h/2);return}
+ const vals=data.map(x=>+x.w),min=Math.min(...vals)-1.5,max=Math.max(...vals)+1.5,range=max-min||1,p={l:39,r:12,t:22,b:31},cw=w-p.l-p.r,ch=h-p.t-p.b;
+ ctx.font='10px sans-serif';ctx.textAlign='right';ctx.strokeStyle='#eceef7';ctx.fillStyle='#8589a5';
+ for(let i=0;i<5;i++){const y=p.t+ch*i/4;ctx.beginPath();ctx.moveTo(p.l,y);ctx.lineTo(w-p.r,y);ctx.stroke();ctx.fillText((max-range*i/4).toFixed(1),p.l-7,y+3)}
+ const point=i=>({x:data.length===1?p.l+cw/2:p.l+cw*i/(data.length-1),y:p.t+ch-(vals[i]-min)/range*ch});
+ if(data.length>1){ctx.beginPath();data.forEach((_,i)=>{const q=point(i);i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)});ctx.strokeStyle='#7668ee';ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.stroke()}
+ data.forEach((item,i)=>{const q=point(i);ctx.beginPath();ctx.arc(q.x,q.y,4,0,Math.PI*2);ctx.fillStyle='#7668ee';ctx.fill();ctx.fillStyle='#555976';ctx.textAlign='center';ctx.font='10px sans-serif';ctx.fillText(Number(item.w).toFixed(1),q.x,q.y-9)});
+ [0,data.length-1].filter((x,i,a)=>a.indexOf(x)===i).forEach(i=>{const q=point(i);ctx.fillStyle='#8589a5';ctx.font='9px sans-serif';ctx.textAlign=i===0?'left':'right';ctx.fillText(data[i].date.slice(5),q.x,h-8)});
+}
+function weightStats(){
+ const c=$('wStats'),data=S.weights.slice().sort((a,b)=>a.date.localeCompare(b.date));
+ if(!data.length){c.innerHTML='<div class="empty">История веса появится здесь после первого измерения.</div>';return}
+ const first=+data[0].w,last=+data[data.length-1].w,change=last-first,remain=last-(+S.settings.targetWeight||last);
+ c.innerHTML=`<div class="report-line"><span>Первое измерение</span><strong>${first.toFixed(1)} кг</strong></div><div class="report-line"><span>Последнее измерение</span><strong>${last.toFixed(1)} кг</strong></div><div class="report-line"><span>Изменение от первого</span><strong>${change>0?'+':''}${change.toFixed(1)} кг</strong></div><div class="report-line"><span>До целевого веса</span><strong>${remain>0?remain.toFixed(1)+' кг выше':remain<0?Math.abs(remain).toFixed(1)+' кг ниже':'цель достигнута'}</strong></div><div class="report-line"><span>Записей</span><strong>${data.length}</strong></div>`;
+}
+function getPeriod(days){const end=localDate(),startDate=new Date();startDate.setDate(startDate.getDate()-(days-1));const start=localDate(startDate);return {start,end,meals:S.meals.filter(m=>m.date>=start&&m.date<=end),days}}
+function makeReport(days){
+ const period=getPeriod(days),byDate={};
+ period.meals.forEach(m=>{if(!byDate[m.date])byDate[m.date]={cal:0,p:0,f:0,c:0};const s=byDate[m.date];s.cal+=+m.tc||0;s.p+=+m.tp||0;s.f+=+m.tf||0;s.c+=+m.tc2||0});
+ const logged=Object.keys(byDate).length,total=Object.values(byDate).reduce((a,b)=>({cal:a.cal+b.cal,p:a.p+b.p,f:a.f+b.f,c:a.c+b.c}),{cal:0,p:0,f:0,c:0});
+ const avg=logged?total.cal/logged:0,avgAll=total.cal/days;
+ const weights=S.weights.filter(w=>w.date>=period.start&&w.date<=period.end).sort((a,b)=>a.date.localeCompare(b.date));
+ $('repBox').innerHTML=`<div class="notice info">Период: ${period.start} — ${period.end}. Дней с записями питания: ${logged} из ${days}. Среднее ниже считается по дням, когда ты вёл дневник.</div>${logged?`<div class="report-line"><span>Средние калории за день с записями</span><strong>${Math.round(avg)} ккал</strong></div><div class="report-line"><span>Калории в среднем за весь период</span><strong>${Math.round(avgAll)} ккал/день</strong></div><div class="report-line"><span>Белки в среднем за день с записями</span><strong>${(total.p/logged).toFixed(1)} г</strong></div><div class="report-line"><span>Жиры в среднем за день с записями</span><strong>${(total.f/logged).toFixed(1)} г</strong></div><div class="report-line"><span>Углеводы в среднем за день с записями</span><strong>${(total.c/logged).toFixed(1)} г</strong></div>`:'<div class="empty">За этот период пока нет записей о питании.</div>'}${weights.length?`<div class="report-line"><span>Изменение веса за период</span><strong>${(weights[weights.length-1].w-weights[0].w)>0?'+':''}${(weights[weights.length-1].w-weights[0].w).toFixed(1)} кг</strong></div>`:''}`;
+}
+function weekReport(){makeReport(7)}
+function monthReport(){makeReport(30)}
+function saveSettings(){
+ const min=Number($('setMin').value),max=Number($('setMax').value),target=Number($('setTarget').value);
+ if(!Number.isFinite(min)||!Number.isFinite(max)||min<0||max<=0||min>max){toast('Проверь диапазон калорий');return}
+ if(!Number.isFinite(target)||target<30||target>300){toast('Проверь целевой вес');return}
+ S.settings={targetWeight:target,startDate:$('setStart').value||localDate(),minCalories:min,maxCalories:max,userName:$('setName').value.trim()};
+ save();renderAll();toast('Настройки сохранены');
+}
+function exportFile(name,content,type){const blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+function exportJSON(){exportFile('dnevnik-backup-'+localDate()+'.json',JSON.stringify(S,null,2),'application/json;charset=utf-8');toast('Резервная копия подготовлена')}
+function exportCSV(){const rows=[['Дата','Продукты','Ккал','Белки г','Жиры г','Углеводы г'],...S.meals.map(m=>[m.date,m.items.map(i=>i.name).join('; '),m.tc,m.tp,m.tf,m.tc2])];const csv=rows.map(r=>r.map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(';')).join('\r\n');exportFile('dnevnik-food-'+localDate()+'.csv','\ufeff'+csv,'text/csv;charset=utf-8')}
+function importJSON(file){const reader=new FileReader();reader.onload=()=>{try{const x=JSON.parse(reader.result);if(!x||!Array.isArray(x.meals)||!Array.isArray(x.weights)||!x.settings)throw Error();if(!confirm('Импорт заменит текущие данные. Продолжить?'))return;S={...DEFAULT,...x,settings:{...DEFAULT.settings,...x.settings},meals:x.meals,weights:x.weights,chatHistory:Array.isArray(x.chatHistory)?x.chatHistory:[]};save();initSettings();renderAll();drawChart();toast('Резервная копия восстановлена')}catch(e){toast('Не удалось прочитать этот файл резервной копии')}};reader.readAsText(file)}
+function initSettings(){$('setName').value=S.settings.userName||'';$('setTarget').value=S.settings.targetWeight;$('setStart').value=S.settings.startDate||localDate();$('setMin').value=S.settings.minCalories;$('setMax').value=S.settings.maxCalories}
+$('addMealBtn').addEventListener('click',addMeal);
+$('mealIn').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();addMeal()}});
+$('addWeightBtn').addEventListener('click',addWeight);
+$('sendChatBtn').addEventListener('click',sendChat);
+$('chatIn').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat()});
+$('refreshTips').addEventListener('click',()=>{renderTips();toast('Подборка обновлена')});
+$('weekBtn').addEventListener('click',weekReport);$('monthBtn').addEventListener('click',monthReport);
+$('saveSettingsBtn').addEventListener('click',saveSettings);
+$('exportBtn').addEventListener('click',exportJSON);$('csvBtn').addEventListener('click',exportCSV);
+$('importBtn').addEventListener('click',()=>$('importFile').click());
+$('importFile').addEventListener('change',e=>{if(e.target.files[0])importJSON(e.target.files[0]);e.target.value=''});
+$('clearBtn').addEventListener('click',()=>{if(confirm('Удалить все записи, настройки и историю чата? Это нельзя отменить.')){localStorage.removeItem('dnevnik_balance_v1');S=JSON.parse(JSON.stringify(DEFAULT));S.settings.startDate=localDate();initSettings();renderAll();drawChart();$('chatMsgs').innerHTML='<div class="bubble ai">Данные очищены. Начнём заново — добавь первую запись.</div>';toast('Данные удалены')}})
+function init(){
+ initSettings();renderAll();drawChart();
+ const old=S.chatHistory.slice(-12);if(old.length){$('chatMsgs').innerHTML='';old.forEach(m=>{addBubble(m.u,'user');addBubble(m.a,'ai')})}
+}
+window.addEventListener('resize',()=>{if($('weight').classList.contains('active'))drawChart()});
+init();
+})();
+</script>
+</body>
+</html>

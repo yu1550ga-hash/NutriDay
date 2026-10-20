@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Мой баланс — энергетический баланс</title>
+<style>
+:root{--ink:#242044;--muted:#6c6885;--bg:#f7f5ff;--card:#fff;--purple:#7657ff;--pink:#ff5da2;--cyan:#27c7d8;--green:#25b887;--orange:#ffad42;--red:#f45d6e}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#f2efff,#fff3f8 55%,#eafcff);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:var(--ink);padding:24px}
+.app{max-width:1050px;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:22px}.brand{display:flex;align-items:center;gap:12px}.logo{width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,var(--purple),var(--pink));display:grid;place-items:center;color:white;font-size:25px;box-shadow:0 8px 22px #7657ff40}.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);font-weight:800}.top h1{font-size:clamp(24px,4vw,36px);margin:3px 0 0;letter-spacing:-.04em}.date{border:0;border-radius:14px;padding:12px 14px;background:#ffffffc9;color:var(--ink);font:inherit;box-shadow:0 4px 16px #3220640c}
+.hero{border-radius:28px;padding:26px;background:linear-gradient(120deg,#7056ff,#9d59f5 48%,#ef66b2);color:white;box-shadow:0 16px 35px #7657ff35;display:grid;grid-template-columns:1.15fr .85fr;gap:24px;align-items:center}.hero h2{font-size:clamp(22px,3vw,30px);margin:0 0 8px}.hero p{margin:0;color:#f4efff;line-height:1.55}.inputline{display:flex;gap:10px;align-items:center;margin-top:20px;flex-wrap:wrap}.inputline label{font-size:13px;font-weight:700}.inputline input{width:150px;border:1px solid #ffffff70;background:#ffffff20;color:white;padding:13px 14px;border-radius:13px;font-size:19px;font-weight:800;outline:none}.inputline input::placeholder{color:#ffffffb0}.unit{font-size:13px;color:#f4efff}.hero-total{background:#ffffff20;border:1px solid #ffffff40;border-radius:22px;padding:22px;text-align:center;backdrop-filter:blur(8px)}.hero-total .big{font-size:clamp(35px,5vw,54px);font-weight:900;letter-spacing:-.05em;line-height:1.1}.hero-total .caption{font-size:13px;color:#f5edff;margin-top:8px}.progress{height:9px;background:#ffffff40;border-radius:99px;overflow:hidden;margin-top:18px}.progress span{display:block;height:100%;width:0;background:#fff;border-radius:99px;transition:width .3s}
+.section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:28px 2px 14px}.section-head h2{font-size:22px;margin:0;letter-spacing:-.03em}.section-head p{margin:4px 0 0;color:var(--muted);font-size:13px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.card{background:var(--card);border:1px solid #eae6fb;border-radius:22px;padding:20px;box-shadow:0 8px 24px #35215d0b;position:relative;overflow:hidden}.card:before{content:"";position:absolute;top:0;left:0;right:0;height:5px;background:var(--accent)}.card-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.dot{width:11px;height:11px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 13%,white)}.card h3{margin:0;font-size:15px}.kcal{font-size:29px;font-weight:900;letter-spacing:-.04em;margin:18px 0 2px}.range{font-size:12px;color:var(--muted)}.status{display:inline-flex;align-items:center;gap:7px;margin-top:15px;padding:8px 10px;border-radius:10px;background:var(--statusbg,#f0edff);color:var(--statuscolor,var(--purple));font-size:12px;font-weight:800}.card small{display:block;color:var(--muted);line-height:1.5;margin-top:13px}.marker{margin-top:15px;position:relative;padding-top:13px}.track{height:8px;border-radius:20px;background:#eeeaf8;position:relative}.track .range-band{position:absolute;top:0;bottom:0;border-radius:20px;background:color-mix(in srgb,var(--accent) 30%,white);left:0;width:0}.needle{position:absolute;top:-4px;left:0;width:4px;height:16px;border-radius:4px;background:var(--accent);box-shadow:0 0 0 3px white;transition:left .3s}.track-labels{display:flex;justify-content:space-between;color:#928da8;font-size:10px;margin-top:7px}
+.summary{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}.summary-box{border-radius:22px;padding:20px;background:white;border:1px solid #eae6fb;box-shadow:0 8px 24px #35215d0b}.summary-box h3{margin:0 0 14px;font-size:16px}.result-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #f0edf8;font-size:14px}.result-row:last-child{border:0}.pill{border-radius:99px;padding:6px 10px;font-size:12px;font-weight:800;white-space:nowrap;background:#f0edff;color:var(--purple)}.pill.good{background:#e4fbf1;color:#13875f}.pill.warn{background:#fff3dd;color:#9a5a00}.pill.bad{background:#ffe7eb;color:#b52c45}.note{color:var(--muted);font-size:12px;line-height:1.55;margin:14px 2px 0}.footer{padding:24px 2px 4px;text-align:center;color:#8c86a4;font-size:12px}
+@media(max-width:760px){body{padding:14px}.hero{grid-template-columns:1fr;padding:21px}.cards{grid-template-columns:1fr}.card{padding:18px}.summary{grid-template-columns:1fr}.top{align-items:flex-start}.date{max-width:145px;font-size:12px}.hero-total{padding:18px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand"><div class="logo">✦</div><div><div class="eyebrow">Личный дневник здоровья</div><h1>Мой баланс</h1></div></div>
+    <input class="date" id="date" type="date" aria-label="Дата">
+  </header>
+
+  <section class="hero">
+    <div>
+      <h2>Твой день. Твой баланс. 💜</h2>
+      <p>Введи суммарные калории за день — диаграмма покажет положение относительно цели, обмена веществ в покое и поддержки веса.</p>
+      <div class="inputline"><label for="calories">Съедено за день</label><input id="calories" type="number" min="0" max="10000" step="1" placeholder="Напр. 1350"><span class="unit">ккал</span></div>
+    </div>
+    <div class="hero-total"><div class="eyebrow" style="color:#f5edff">Калории за день</div><div class="big" id="bigTotal">—</div><div class="caption" id="heroCaption">Введи значение, чтобы рассчитать баланс</div><div class="progress"><span id="progressFill"></span></div></div>
+  </section>
+
+  <div class="section-head"><div><h2>Энергетический баланс</h2><p>Три контрольные точки на одной шкале</p></div></div>
+  <section class="cards">
+    <article class="card" style="--accent:var(--purple)" id="goalCard">
+      <div class="card-head"><h3>🎯 План · цель</h3><span class="dot"></span></div>
+      <div class="kcal">1300–1400 <span style="font-size:13px;font-weight:700">ккал</span></div>
+      <div class="range">Целевой коридор на сутки</div>
+      <div class="status" id="goalStatus">Ожидает ввода</div>
+      <div class="marker"><div class="track"><div class="range-band" style="left:43.33%;width:3.33%"></div><div class="needle" id="goalNeedle"></div></div><div class="track-labels"><span>0</span><span>1500</span><span>3000 ккал</span></div></div>
+      <small>Статус: в плане, ниже плана или выше плана.</small>
+    </article>
+    <article class="card" style="--accent:var(--cyan)" id="bmrCard">
+      <div class="card-head"><h3>⚡ Обмен в покое · BMR</h3><span class="dot"></span></div>
+      <div class="kcal">1745 <span style="font-size:13px;font-weight:700">ккал</span></div>
+      <div class="range">Оценка расхода энергии в покое</div>
+      <div class="status" id="bmrStatus">Ожидает ввода</div>
+      <div class="marker"><div class="track"><div class="range-band" style="left:58.17%;width:1%"></div><div class="needle" id="bmrNeedle"></div></div><div class="track-labels"><span>0</span><span>1500</span><span>3000 ккал</span></div></div>
+      <small>BMR — ориентир расхода в покое, а не универсальная минимальная норма питания.</small>
+    </article>
+    <article class="card" style="--accent:var(--pink)" id="tdeeCard">
+      <div class="card-head"><h3>🔥 Поддержка веса · TDEE</h3><span class="dot"></span></div>
+      <div class="kcal">2100–2250 <span style="font-size:13px;font-weight:700">ккал</span></div>
+      <div class="range">Оценка суточного расхода с активностью</div>
+      <div class="status" id="tdeeStatus">Ожидает ввода</div>
+      <div class="marker"><div class="track"><div class="range-band" style="left:70%;width:5%"></div><div class="needle" id="tdeeNeedle"></div></div><div class="track-labels"><span>0</span><span>1500</span><span>3000 ккал</span></div></div>
+      <small>Дефицит или профицит оценивается относительно диапазона поддержки.</small>
+    </article>
+  </section>
+
+  <section class="summary">
+    <div class="summary-box"><h3>📌 Итог дня</h3>
+      <div class="result-row"><span>Похудение по энергетическому балансу</span><span class="pill" id="lossResult">—</span></div>
+      <div class="result-row"><span>Оценка калорийности</span><span class="pill" id="safetyResult">—</span></div>
+      <div class="result-row"><span>До нижней границы цели</span><strong id="toGoal">—</strong></div>
+      <div class="result-row"><span>До верхней границы цели</span><strong id="toUpper">—</strong></div>
+    </div>
+    <div class="summary-box"><h3>📊 Шкала сравнения</h3>
+      <p style="margin:0;color:var(--muted);font-size:13px;line-height:1.6">Текущая калорийность отмечается на каждой шкале. Цветные зоны показывают целевые диапазоны: цель 1300–1400 ккал и поддержка 2100–2250 ккал.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:15px"><span class="pill">🎯 Цель 1300–1400</span><span class="pill" style="background:#e2fbfd;color:#087f8c">⚡ BMR 1745</span><span class="pill" style="background:#ffe7f1;color:#b72f70">🔥 TDEE 2100–2250</span></div>
+    </div>
+  </section>
+  <p class="note">Расчёты основаны на введённом суммарном калораже и заданных ориентирах. Это информационная визуализация, а не медицинская оценка безопасности. Не используйте статус «похудение» как гарантию изменения веса: на динамику влияют вода, активность и другие факторы. С учётом сердечно-сосудистых заболеваний индивидуальную цель по калорийности важно согласовать с лечащим врачом.</p>
+  <footer class="footer">Мой баланс · персональный дневник здоровья</footer>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const input=$('calories');
+$('date').value=new Date().toISOString().slice(0,10);
+function setPill(el,text,kind=''){el.textContent=text;el.className='pill '+kind}
+function setStatus(el,text,kind=''){el.textContent=text;el.style.setProperty('--statusbg',kind==='good'?'#e4fbf1':kind==='warn'?'#fff3dd':kind==='bad'?'#ffe7eb':'#f0edff');el.style.setProperty('--statuscolor',kind==='good'?'#13875f':kind==='warn'?'#9a5a00':kind==='bad'?'#b52c45':'#7657ff')}
+function update(){
+ const raw=input.value;
+ const valid=raw!==''&&Number.isFinite(Number(raw))&&Number(raw)>=0;
+ if(!valid){
+  $('bigTotal').textContent='—';$('heroCaption').textContent='Введи значение, чтобы рассчитать баланс';$('progressFill').style.width='0%';
+  ['goalStatus','bmrStatus','tdeeStatus'].forEach(id=>setStatus($(id),'Ожидает ввода'));
+  ['goalNeedle','bmrNeedle','tdeeNeedle'].forEach(id=>$(id).style.left='0%');
+  setPill($('lossResult'),'—');setPill($('safetyResult'),'—');$('toGoal').textContent='—';$('toUpper').textContent='—';return;
+ }
+ const c=Math.floor(Number(raw)),pos=Math.min(100,c/3000*100);
+ $('bigTotal').textContent=c.toLocaleString('ru-RU');$('heroCaption').textContent=c<1300?`На ${1300-c} ккал ниже нижней границы цели`:c>1400?`На ${c-1400} ккал выше верхней границы цели`:'Ты внутри целевого коридора 🎉';$('progressFill').style.width=pos+'%';
+ ['goalNeedle','bmrNeedle','tdeeNeedle'].forEach(id=>$(id).style.left=`calc(${pos}% - 2px)`);
+ if(c<1300)setStatus($('goalStatus'),`Ниже плана на ${1300-c} ккал`,'bad');
+ else if(c>1400)setStatus($('goalStatus'),`Выше плана на ${c-1400} ккал`,'warn');
+ else setStatus($('goalStatus'),'В плане ✓','good');
+ if(c<1745)setStatus($('bmrStatus'),`Ниже BMR на ${1745-c} ккал`,'warn');
+ else if(c===1745)setStatus($('bmrStatus'),'На уровне BMR','good');
+ else setStatus($('bmrStatus'),`Выше BMR на ${c-1745} ккал`,'good');
+ if(c<2100)setStatus($('tdeeStatus'),`Дефицит ${2100-c}–${2250-c} ккал`,'good');
+ else if(c<=2250)setStatus($('tdeeStatus'),'Поддержка веса','good');
+ else setStatus($('tdeeStatus'),`Профицит ${c-2250}–${c-2100} ккал`,'warn');
+ setPill($('lossResult'),c<2100?'Да — есть расчётный дефицит':'Нет / не подтверждается',c<2100?'good':'warn');
+ if(c<1200)setPill($('safetyResult'),'Опасно','bad');
+ else if(c<1300)setPill($('safetyResult'),'Жёстко: ниже цели','warn');
+ else if(c<=1400)setPill($('safetyResult'),'В целевом коридоре','good');
+ else setPill($('safetyResult'),'Выше цели','warn');
+ $('toGoal').textContent=c<1300?`${1300-c} ккал`:c>1300?`${c-1300} ккал сверх минимума`:'0 ккал';
+ $('toUpper').textContent=c<1400?`${1400-c} ккал доступно`:c>1400?`${c-1400} ккал сверх цели`:'0 ккал';
+}
+input.addEventListener('input',update);
+</script>
+</body>
+</html>

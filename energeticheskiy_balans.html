@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Энергетический баланс</title>
+<style>
+  :root {
+    --ink:#202044; --muted:#777896; --panel:rgba(255,255,255,.82);
+    --purple:#6c4cff; --pink:#ff5ea8; --cyan:#25c7d9; --green:#16b887;
+    --orange:#ff9d42; --red:#f05270;
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; min-height:100vh; padding:28px 16px 42px;
+    font-family:Inter,ui-rounded,"Segoe UI",Arial,sans-serif; color:var(--ink);
+    background:
+      radial-gradient(circle at 8% 8%, #ffe2f0 0, transparent 28%),
+      radial-gradient(circle at 95% 18%, #d9faff 0, transparent 30%),
+      radial-gradient(circle at 50% 100%, #e6ddff 0, transparent 34%),
+      #f6f5ff;
+  }
+  .app { max-width:980px; margin:0 auto; }
+  header { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:24px; }
+  .eyebrow { text-transform:uppercase; letter-spacing:.15em; font-size:11px; font-weight:900; color:var(--purple); }
+  h1 { margin:6px 0 0; font-size:clamp(28px,5vw,42px); line-height:1.08; letter-spacing:-.04em; }
+  .date { color:var(--muted); font-size:13px; margin-top:9px; }
+  .logo { width:62px;height:62px; flex:0 0 62px; display:grid;place-items:center;border-radius:21px;
+    background:linear-gradient(135deg,var(--purple),var(--pink));color:white;font-size:29px;
+    box-shadow:0 12px 28px #8269ff55; }
+  .layout { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  .card { background:var(--panel); border:1px solid #fff; border-radius:24px; padding:23px;
+    box-shadow:0 12px 35px #3d34730d; backdrop-filter:blur(12px); }
+  .wide { grid-column:1/-1; }
+  .section-title { display:flex;align-items:center;gap:10px;margin:0 0 18px;font-size:18px; }
+  .icon { display:grid;place-items:center;width:37px;height:37px;border-radius:13px;background:#eee9ff;font-size:19px; }
+  label { display:block;font-size:13px;font-weight:800;color:#656582;margin-bottom:8px; }
+  .input-row { display:flex;align-items:center;gap:10px; }
+  input[type=number] { width:100%;min-width:0;border:2px solid #e9e6fb;background:#fff;border-radius:14px;
+    padding:13px 14px;font-size:20px;font-weight:800;color:var(--ink);outline:none;transition:.2s; }
+  input[type=number]:focus { border-color:var(--purple);box-shadow:0 0 0 4px #6c4cff18; }
+  .unit { color:var(--muted);font-size:13px;font-weight:800;white-space:nowrap; }
+  .hint { color:var(--muted);font-size:12px;line-height:1.5;margin-top:10px; }
+  .balance-top { display:flex;justify-content:space-between;gap:12px;align-items:flex-start; }
+  .balance-title { font-size:16px;font-weight:900;margin:0 0 5px; }
+  .range { font-size:13px;color:var(--muted); }
+  .pill { font-size:11px;font-weight:900;padding:7px 10px;border-radius:999px;white-space:nowrap;background:#f0edff;color:var(--purple); }
+  .number { font-size:32px;font-weight:950;letter-spacing:-.04em;margin:20px 0 4px; }
+  .status { display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:800;padding:9px 11px;border-radius:12px;background:#f3f2fb;color:#6e6b8c; }
+  .dot { width:8px;height:8px;border-radius:50%;background:currentColor; }
+  .track { margin-top:17px;height:9px;background:#efedf8;border-radius:99px;overflow:hidden; }
+  .fill { height:100%;width:0;border-radius:99px;transition:width .35s ease; }
+  .purple .icon { background:#eee9ff; } .purple .fill { background:linear-gradient(90deg,#6c4cff,#a38bff); }
+  .cyan .icon { background:#ddfaff; } .cyan .fill { background:linear-gradient(90deg,#25c7d9,#79e8e9); }
+  .orange .icon { background:#fff0dc; } .orange .fill { background:linear-gradient(90deg,#ff9d42,#ffd16b); }
+  .purple .number { color:var(--purple); } .cyan .number { color:#10aabc; } .orange .number { color:#f08a25; }
+  .result-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+  .result { padding:17px;border-radius:18px;background:#f7f6ff; }
+  .result-label { color:var(--muted);font-size:12px;font-weight:800;margin-bottom:9px; }
+  .result-value { font-size:21px;font-weight:950; }
+  .result-value.good { color:var(--green); } .result-value.warn { color:var(--orange); } .result-value.bad { color:var(--red); }
+  .safety-note { margin-top:14px;padding:13px 14px;border-radius:14px;background:#fff7e9;color:#886026;font-size:12px;line-height:1.55; }
+  .footer { text-align:center;color:#9391ad;font-size:11px;margin-top:20px;line-height:1.6; }
+  button { border:0;border-radius:13px;padding:11px 14px;background:#f0edff;color:var(--purple);font-weight:900;cursor:pointer; }
+  button:hover { filter:brightness(.97); }
+  @media(max-width:680px) {
+    body { padding:20px 12px 30px; }
+    .layout { grid-template-columns:1fr; }
+    .wide { grid-column:auto; }
+    .card { padding:19px; }
+    .result-grid { grid-template-columns:1fr 1fr; }
+    .logo { width:52px;height:52px;flex-basis:52px;border-radius:17px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <div class="eyebrow">Личный трекер здоровья</div>
+      <h1>Энергетический<br>баланс ✨</h1>
+      <div class="date">Три ориентира • быстрый расчёт за день</div>
+    </div>
+    <div class="logo" aria-hidden="true">⚡</div>
+  </header>
+
+  <section class="card wide" style="margin-bottom:18px">
+    <h2 class="section-title"><span class="icon">🍽️</span> Калории за сегодня</h2>
+    <label for="intake">Фактически съедено</label>
+    <div class="input-row">
+      <input id="intake" type="number" min="0" max="10000" step="1" value="1350" inputmode="numeric" aria-describedby="intakeHint">
+      <span class="unit">ккал</span>
+      <button id="reset" type="button">Сбросить</button>
+    </div>
+    <div class="hint" id="intakeHint">Введите итог калорий за день — статусы ниже обновятся автоматически.</div>
+  </section>
+
+  <main class="layout">
+    <section class="card purple">
+      <div class="balance-top">
+        <div><h2 class="balance-title">01 · План</h2><div class="range">Целевой коридор</div></div>
+        <span class="pill">ЦЕЛЬ</span>
+      </div>
+      <div class="number">1300–1400 <span style="font-size:14px;letter-spacing:0">ккал</span></div>
+      <div id="planStatus" class="status"><span class="dot"></span>В плане</div>
+      <div class="track"><div class="fill" id="planFill"></div></div>
+      <div class="hint">Цель на день: оставаться в пределах 1300–1400 ккал.</div>
+    </section>
+
+    <section class="card cyan">
+      <div class="balance-top">
+        <div><h2 class="balance-title">02 · Обмен в покое</h2><div class="range">BMR — базовый обмен</div></div>
+        <span class="pill" style="background:#ddfaff;color:#078b9b">BMR</span>
+      </div>
+      <div class="number">1745 <span style="font-size:14px;letter-spacing:0">ккал</span></div>
+      <div id="bmrStatus" class="status"><span class="dot"></span>Ниже BMR на 395 ккал</div>
+      <div class="track"><div class="fill" id="bmrFill"></div></div>
+      <div class="hint">Сравнение с заданным ориентиром BMR, а не индивидуальная медицинская оценка.</div>
+    </section>
+
+    <section class="card orange wide">
+      <div class="balance-top">
+        <div><h2 class="balance-title">03 · Поддержка веса</h2><div class="range">TDEE — ориентир расхода за сутки</div></div>
+        <span class="pill" style="background:#fff0dc;color:#b96812">TDEE</span>
+      </div>
+      <div class="number">2100–2250 <span style="font-size:14px;letter-spacing:0">ккал</span></div>
+      <div id="tdeeStatus" class="status"><span class="dot"></span>Дефицит 750 ккал</div>
+      <div class="track"><div class="fill" id="tdeeFill"></div></div>
+      <div class="hint">Дефицит считается относительно диапазона поддержки; показывается диапазон значений.</div>
+    </section>
+
+    <section class="card wide">
+      <h2 class="section-title"><span class="icon">🏁</span> Итог дня</h2>
+      <div class="result-grid">
+        <div class="result">
+          <div class="result-label">Похудение</div>
+          <div id="lossResult" class="result-value good">Да</div>
+        </div>
+        <div class="result">
+          <div class="result-label">Безопасность по калориям</div>
+          <div id="safetyResult" class="result-value good">Ок</div>
+        </div>
+      </div>
+      <div id="safetyNote" class="safety-note">Калорийность в целевом коридоре. Этот индикатор оценивает только калорийность и не заменяет медицинскую оценку.</div>
+    </section>
+  </main>
+  <div class="footer">Показатели BMR и TDEE используются как заданные ориентиры.<br>Расчёт не учитывает точность дневника, состав питания и индивидуальные медицинские факторы.</div>
+</div>
+<script>
+  const intake = document.getElementById('intake');
+  const planStatus = document.getElementById('planStatus');
+  const bmrStatus = document.getElementById('bmrStatus');
+  const tdeeStatus = document.getElementById('tdeeStatus');
+  const lossResult = document.getElementById('lossResult');
+  const safetyResult = document.getElementById('safetyResult');
+  const safetyNote = document.getElementById('safetyNote');
+
+  function status(el, text, color) {
+    el.innerHTML = '<span class="dot"></span>' + text;
+    el.style.color = color;
+    el.style.background = color + '18';
+  }
+  function setFill(id, value, max) {
+    document.getElementById(id).style.width = Math.max(0, Math.min(100, value / max * 100)) + '%';
+  }
+  function update() {
+    const raw = intake.value.trim();
+    const n = Number(raw);
+    if (raw === '' || !Number.isFinite(n) || n < 0) {
+      [planStatus,bmrStatus,tdeeStatus].forEach(el => status(el, 'Введите калории', '#777896'));
+      lossResult.textContent = '—'; safetyResult.textContent = '—';
+      safetyNote.textContent = 'Введите фактическую калорийность за день для расчёта.';
+      ['planFill','bmrFill','tdeeFill'].forEach(id => setFill(id,0,1));
+      return;
+    }
+    const kcal = Math.floor(n);
+    if (kcal < 1300) status(planStatus, 'Ниже плана на ' + (1300-kcal) + ' ккал', '#f05270');
+    else if (kcal > 1400) status(planStatus, 'Выше плана на ' + (kcal-1400) + ' ккал', '#f05270');
+    else status(planStatus, 'В плане', '#16a879');
+
+    if (kcal < 1745) status(bmrStatus, 'Ниже BMR на ' + (1745-kcal) + ' ккал', '#0796a5');
+    else if (kcal === 1745) status(bmrStatus, 'На уровне BMR', '#0796a5');
+    else status(bmrStatus, 'Выше BMR на ' + (kcal-1745) + ' ккал', '#0796a5');
+
+    if (kcal < 2100) status(tdeeStatus, 'Дефицит ' + (2100-kcal) + '–' + (2250-kcal) + ' ккал', '#c87819');
+    else if (kcal <= 2250) status(tdeeStatus, 'Поддержка / возможен дефицит', '#c87819');
+    else status(tdeeStatus, 'Профицит ' + (kcal-2250) + '–' + (kcal-2100) + ' ккал', '#c87819');
+
+    setFill('planFill',kcal,1800); setFill('bmrFill',kcal,2200); setFill('tdeeFill',kcal,2500);
+
+    const likelyDeficit = kcal < 2100;
+    lossResult.textContent = likelyDeficit ? 'Да' : (kcal <= 2250 ? 'Неясно' : 'Нет');
+    lossResult.className = 'result-value ' + (likelyDeficit ? 'good' : (kcal <= 2250 ? 'warn' : 'bad'));
+
+    let safety, cls, note;
+    if (kcal < 1200) {
+      safety='Опасно'; cls='bad'; note='Калорийность очень низкая относительно заданного плана. Не компенсируйте это голоданием; с учётом медицинского контекста обсудите подход к снижению веса с лечащим врачом.';
+    } else if (kcal < 1300) {
+      safety='Жёстко'; cls='warn'; note='Ниже установленной красной линии 1300 ккал. Не снижайте калорийность дальше и возвращайтесь к заданному коридору.';
+    } else if (kcal <= 1400) {
+      safety='Ок'; cls='good'; note='Калорийность в целевом коридоре. Этот индикатор оценивает только калорийность и не подтверждает общую безопасность питания.';
+    } else if (kcal <= 1745) {
+      safety='Жёстко'; cls='warn'; note='Выше целевого коридора, но ниже заданного BMR. Оценивайте день по фактическому рациону, не компенсируйте перееданием или голоданием.';
+    } else {
+      safety='Ок'; cls='good'; note='Калорийность выше BMR. Сравните её с TDEE и целью дня; оценка не учитывает соль, жиры и другие параметры рациона.';
+    }
+    safetyResult.textContent=safety; safetyResult.className='result-value '+cls;
+    safetyNote.textContent=note;
+  }
+  intake.addEventListener('input', update);
+  document.getElementById('reset').addEventListener('click', () => { intake.value=''; update(); intake.focus(); });
+  update();
+</script>
+</body>
+</html>
